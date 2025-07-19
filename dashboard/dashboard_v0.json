@@ -1,0 +1,1071 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 1,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "description": "This query identifies which services are most frequently involved in transactions, helping to prioritize monitoring efforts. Highlights the most utilized or impacted services, allowing operations teams to focus on critical areas",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 90
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 7,
+        "options": {
+          "minVizHeight": 75,
+          "minVizWidth": 75,
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": true
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true,
+          "sizing": "auto"
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  affected_service,\r\n  COUNT(transaction_id) AS transaction_count\r\nFROM\r\n  onchain_fiat_transaction_data \r\nWHERE\r\n  affected_service != ''\r\n  AND timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  affected_service\r\nORDER BY\r\n  transaction_count DESC\r\nLIMIT 5;",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": "Top 5 Affected Services by Transaction Count",
+        "type": "gauge"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "id": 11,
+        "options": {
+          "displayMode": "basic",
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": false
+          },
+          "maxVizHeight": 154,
+          "minVizHeight": 89,
+          "minVizWidth": 43,
+          "namePlacement": "left",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "firstNotNull"
+            ],
+            "fields": "/^score$/",
+            "values": true
+          },
+          "showUnfilled": true,
+          "sizing": "manual",
+          "valueMode": "text"
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  transaction_id,\n  MAX(aml_risk_score) as score,\n  min(timestamp)\nFROM\n  onchain_fiat_transaction_data\nwhere aml_risk_score is not null\nGROUP BY\n  transaction_id\nORDER BY\n  min(timestamp) desc,\n  MAX(aml_risk_score) desc\nLIMIT\n  5",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [
+                    {
+                      "name": "transaction_id",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                },
+                {
+                  "name": "MAX",
+                  "parameters": [
+                    {
+                      "name": "aml_risk_score",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "name": "transaction_id",
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 5,
+              "orderBy": {
+                "property": {
+                  "name": "MAX(aml_risk_score)",
+                  "type": "string"
+                },
+                "type": "property"
+              }
+            },
+            "table": "onchain_fiat_transaction_data"
+          }
+        ],
+        "title": "maximum risk score by transaction id",
+        "type": "bargauge"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "description": "A high-level, critical metric for overall system health. A drop indicates a widespread issue that needs immediate attention.  Provides a quick, at-a-glance health check of the payment system's overall success rate for specific days.",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "fillOpacity": 80,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineWidth": 1,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "id": 12,
+        "options": {
+          "barRadius": 0,
+          "barWidth": 0.97,
+          "fullHighlight": false,
+          "groupWidth": 0.7,
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "orientation": "auto",
+          "showValue": "auto",
+          "stacking": "none",
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          },
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "select \r\nto_char(transaction_date, 'DD-MM-YYYY'),\r\ncount(CASE when NOT success THEN 0 END) as \"Failed Transactions\",\r\ncount(CASE WHEN success THEN 1 END) as \"Successful Transactions\"\r\nfrom\r\n(\r\n select\r\n\ttransaction_id,\r\n\tcount(event_type),\r\n\tcount(event_type) = 17 AS success,\r\n\tMIN(DATE_TRUNC('day', timestamp::timestamp)) AS transaction_date\r\nfrom\r\n\tonchain_fiat_transaction_data oftd\r\nwhere\r\n event_index  is not null\r\ngroup by transaction_id \r\n) as f\r\ngroup by transaction_date",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": "Daily Transaction Success Rate",
+        "type": "barchart"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "description": "Monitors the speed at which transactions are confirmed on different blockchain networks. Delays for specific networks could indicate network congestion, provider issues, or internal bottlenecks.Helps operations answer: \"Are transactions on certain networks taking too long to confirm, potentially impacting user experience or liquidity?\"",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {
+                  "color": "yellow",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "id": 13,
+        "options": {
+          "displayMode": "gradient",
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": false
+          },
+          "maxVizHeight": 300,
+          "minVizHeight": 16,
+          "minVizWidth": 8,
+          "namePlacement": "auto",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": true
+          },
+          "showUnfilled": true,
+          "sizing": "auto",
+          "valueMode": "color"
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "select\r\n\tconcat(from_network_, ' to ', to_network_),\r\n\tcount(*)\r\nfrom\r\n\t(\r\n\tselect\r\n\t\ttransaction_id,\r\n\t\tcount(event_type),\r\n\t\tcount(event_type) = 17 as success,\r\n\t\tMIN(DATE_TRUNC('day', timestamp::timestamp)) as transaction_date,\r\n\t\tmin(to_network) as to_network_,\r\n\t\tmin(from_network) as from_network_\r\n\tfrom\r\n\t\tonchain_fiat_transaction_data oftd\r\n\twhere\r\n\t\tevent_index is not null\r\n\tgroup by\r\n\t\ttransaction_id \r\n)\r\nas f\r\ngroup by\r\n\tfrom_network_,\r\n\tto_network_\r\norder by \r\n\tfrom_network_,\r\n\tto_network_\r\n\t",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": "Average Confirmation Time by Destination Network",
+        "type": "bargauge"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto"
+              },
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        },
+        "id": 10,
+        "options": {
+          "cellHeight": "sm",
+          "footer": {
+            "countRows": false,
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  incident_id,\r\n  tx_status,\r\n  error_code,\r\n  COUNT(transaction_id) AS affected_transactions_count,\r\n  SUM(fiat_amount) AS total_fiat_impact -- If estimated_impact is not directly available, sum fiat_amount\r\nFROM\r\n  onchain_fiat_transaction_data \r\nWHERE\r\n  incident_id IS NOT NULL AND timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  incident_id,\r\n  tx_status,\r\n  error_code\r\nORDER BY\r\n  incident_id, affected_transactions_count DESC;\r\n",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": "Panel Title",
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "description": "This query tracks the average Anti-Money Laundering (AML) risk score over time, which can indicate changes in the overall risk profile of transactions. Monitors the trend of AML risk. Spikes could indicate a need for deeper investigation",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisGridShow": false,
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 8,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "min": 40,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 16
+        },
+        "id": 6,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  DATE_TRUNC('day', timestamp::timestamp) AS time_day,\r\n  AVG(aml_risk_score) AS average_aml_risk_score\r\nFROM\r\n  onchain_fiat_transaction_data \r\nWHERE\r\n  aml_risk_score IS NOT NULL AND timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  time_day\r\nORDER BY\r\n  time_day;",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": " Average AML Risk Score Over Time",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "description": "This query shows how transactions are distributed across different user tiers, helping to understand the activity of various customer segments. Helps to identify which user segments (e.g., 'silver', 'gold', 'tier1', 'tier2') are most active or contributing the most transactions.",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisGridShow": false,
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "fillOpacity": 84,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineWidth": 1,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 21
+        },
+        "id": 5,
+        "options": {
+          "barRadius": 0,
+          "barWidth": 0.97,
+          "colorByField": "user_tier",
+          "fullHighlight": false,
+          "groupWidth": 0.7,
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "orientation": "auto",
+          "showValue": "auto",
+          "stacking": "none",
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          },
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  user_tier,\r\n  COUNT(transaction_id) AS transactions_count\r\nFROM\r\n  onchain_fiat_transaction_data \r\nWHERE\r\n  timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  user_tier\r\nORDER BY\r\n  transactions_count DESC;\r\n",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": "Transactions by User Tier",
+        "type": "barchart"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "yellow",
+              "mode": "fixed"
+            },
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto",
+                "wrapText": true
+              },
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 5,
+          "w": 12,
+          "x": 12,
+          "y": 24
+        },
+        "id": 8,
+        "options": {
+          "cellHeight": "sm",
+          "footer": {
+            "countRows": false,
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  source_chain_id,\r\n  to_network,\r\n  COUNT(transaction_id) AS transaction_count,\r\n  SUM(fiat_amount) AS total_fiat_amount -- Assuming fiat_amount is relevant for these transactions\r\nFROM\r\n  onchain_fiat_transaction_data \r\nWHERE\r\n  timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  source_chain_id,\r\n  to_network\r\nORDER BY\r\n  transaction_count DESC;",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": "Panel Title",
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "description": "This query counts the number of transactions per day, which is essential for monitoring overall activity and identifying trends or spikes. This shows daily volume of transactions. Useful for detecting overall activity patterns.",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisGridShow": false,
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 10,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "fieldMinMax": false,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green"
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 29
+        },
+        "id": 2,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  DATE_TRUNC('day', timestamp::timestamp) AS time_day,\r\n  COUNT(transaction_id) AS total_transactions\r\nFROM\r\n  onchain_fiat_transaction_data \r\nWHERE\r\n  timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  time_day\r\nORDER BY\r\n  time_day;",
+            "refId": "A",
+            "sql": {
+              "columns": [],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50,
+              "whereJsonTree": {
+                "children1": [],
+                "id": "9b9b9bab-0123-4456-b89a-b19822c4610e",
+                "type": "group"
+              }
+            },
+            "table": "onchain_fiat_transaction_data"
+          },
+          {
+            "datasource": {
+              "type": "grafana-postgresql-datasource",
+              "uid": "beseidb9r1ukge"
+            },
+            "editorMode": "code",
+            "format": "table",
+            "hide": false,
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  tx_status,\r\n  COUNT(*) AS status_count\r\nFROM\r\n  onchain_fiat_transaction_data\r\nWHERE\r\n  timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  tx_status\r\nORDER BY\r\n  status_count DESC;",
+            "refId": "B",
+            "sql": {
+              "columns": [
+                {
+                  "parameters": [],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            }
+          }
+        ],
+        "title": "Total Transactions Over Time (Time Series Panel)",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "beseidb9r1ukge"
+        },
+        "description": "This query provides a breakdown of transaction statuses (e.g., 'confirmed', 'failed', 'pending'), crucial for understanding success rates and identifying issues.  Visualizes the proportion of different transaction outcomes. A high percentage of 'failed' or 'pending' transactions would immediately stand out",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "#808080",
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              }
+            },
+            "fieldMinMax": false,
+            "mappings": []
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 29
+        },
+        "id": 4,
+        "options": {
+          "displayLabels": [
+            "value"
+          ],
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "pieType": "pie",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "11.4.0",
+        "targets": [
+          {
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n  tx_status,\r\n  COUNT(*) AS status_count\r\nFROM\r\n  onchain_fiat_transaction_data \r\nWHERE\r\n  timestamp::timestamp BETWEEN $__timeFrom() AND $__timeTo()\r\nGROUP BY\r\n  tx_status\r\nORDER BY\r\n  status_count DESC;",
+            "refId": "A",
+            "sql": {
+              "columns": [
+                {
+                  "name": "COUNT",
+                  "parameters": [
+                    {
+                      "name": "tx_status",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                },
+                {
+                  "name": "MIN",
+                  "parameters": [
+                    {
+                      "name": "\"timestamp\"",
+                      "type": "functionParameter"
+                    }
+                  ],
+                  "type": "function"
+                }
+              ],
+              "groupBy": [
+                {
+                  "property": {
+                    "name": "tx_status",
+                    "type": "string"
+                  },
+                  "type": "groupBy"
+                }
+              ],
+              "limit": 50
+            },
+            "table": "onchain_fiat_transaction_data"
+          },
+          {
+            "datasource": {
+              "type": "grafana-postgresql-datasource",
+              "uid": "beseidb9r1ukge"
+            },
+            "hide": false,
+            "refId": "B"
+          }
+        ],
+        "title": "Transaction Status Distribution",
+        "type": "piechart"
+      }
+    ],
+    "preload": false,
+    "schemaVersion": 40,
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "IVY League",
+    "uid": "aeseimy3si1hce",
+    "version": 18,
+    "weekStart": ""
+  }
