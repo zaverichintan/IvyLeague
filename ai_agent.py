@@ -70,13 +70,6 @@ def generate_summary_with_gemini(events: list) -> str:
     # The API endpoint for the gemini-2.5-flash model
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
 
-    
-    # Please structure your response with the following sections:
-    # 1.  **Executive Summary:** A brief, high-level overview of what happened and why the transaction failed.
-    # 2.  **Root Cause Analysis:** A clear concise explanation of the underlying architectural or operational issues that led to the failure (e.g., lack of service redundancy, insufficient health checks, cascading failures).
-    # 3.  **Suggested Mitigation Strategies:** Provide concrete, actionable steps to prevent this type of failure in the future. Separate them into:
-    #     * **Short-Term Fixes (Immediate Actions):** What can be done right now to stabilize the system.
-    
     # Construct a detailed prompt for the model
     prompt = f"""
     You are a senior ops engineer at a leading crypto transaction manager company. 
