@@ -10,8 +10,12 @@ from ..chat.manager import transaction_details_from_db
 from ..config import AI_AGENT_TIMEOUT
 from ..models.schemas import FailedTransactionRetryResponse, GrafanaWebhookRequest
 from ..chat.manager import insert_transaction_details_to_db
-from ..ai.slack_agent import send_alert_to_slack
+from ..ai.slack_agent import send_alert_to_slack, send_alert_via_email
 from ..database.connection import get_chats_db_connection
+import os
+
+ALERT_EMAIL = os.getenv("ALERT_EMAIL")
+
 
 async def with_timeout(coro, timeout_seconds: float, operation_name: str):
     """Wrapper to add timeout to any async operation."""
@@ -224,9 +228,12 @@ async def grafana_webhook(request: GrafanaWebhookRequest):
             print(f"Error inserting transaction details into the database: {e}")
         
         try:
-            await send_alert_to_slack(transaction_id, simple_response.summary)
+            send_alert_to_slack(transaction_id, simple_response.summary)
+            print("alert sent to slack")
+            send_alert_via_email(ALERT_EMAIL,transaction_id, simple_response.summary)
+            print("alert sent from email alerts@company.com to "+ALERT_EMAIL)
         except Exception as e:
-            print(f"Error sending alert to Slack: {e}")
+            print(f"Error sending alert: {e}")
         
         # summary = analyze_and_summarize_failure_webhook(transaction_id)
         # In a real system, you would send this summary to Slack, PagerDuty, etc.

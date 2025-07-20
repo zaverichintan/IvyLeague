@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
     fetchAlerts();
 
     // Set up polling every 30 seconds
-    const intervalId = setInterval(fetchAlerts, 1000);
+    const intervalId = setInterval(fetchAlerts, 20000);
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);

@@ -50,7 +50,7 @@ const Dashboard = () => {
       {/* Full-height iframe */}
       <div className="flex-1 bg-white">
         <iframe
-          src="https://monit-grafana-open.cern.ch/d/XoND3VQ4k/nkn?orgId=16&from=now-24h&to=now&timezone=browser&var-source=raw&var-bin=5m&kiosk&theme=light"
+          src="http://10.143.44.26:13000/grafana/public-dashboards/8e2a16673e7746cba98141ac367fbb58?orgId=1&from=2025-07-20T04:43:04.547Z&to=2025-07-20T10:43:04.547Z&timezone=browser&theme=light"
           width="100%"
           height="100%"
           className="border-0"
