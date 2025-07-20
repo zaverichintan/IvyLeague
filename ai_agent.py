@@ -115,7 +115,10 @@ def generate_summary_with_gemini(events: list) -> str:
     except Exception as e:
         return f"An unexpected error occurred: {e}"
 
-
+def analyze_and_summarize_failure_webhook(transaction_id: str):
+    db_config = create_db_config_from_env()
+    return analyze_and_summarize_failure(db_config, transaction_id)
+    
 def analyze_and_summarize_failure(db_config, transaction_id: str) -> str:
     """
     Analyzes a transaction's events to determine the cause of failure and generates a summary using the Gemini API.
@@ -159,7 +162,8 @@ if __name__ == "__main__":
     db_config = create_db_config_from_env()
 
     # Generate the failure summary
-    failure_summary = analyze_and_summarize_failure(db_config, test_transaction_id)
+    failure_summary = analyze_and_summarize_failure(db_config, 
+                                                    test_transaction_id)
     
     # Print the report
     print("-" * 70)

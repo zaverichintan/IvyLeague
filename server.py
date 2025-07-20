@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify 
-from ai_agent import create_db_config_from_env, analyze_and_summarize_failure
+from ai_agent import analyze_and_summarize_failure_webhook
 import json
 
 app = Flask(__name__)
@@ -26,17 +26,15 @@ def grafana_webhook():
 
         # Extract the transaction_id from the alert's tags
         transaction_id = None
-        for tag, value in data.get('tags', {}).items():
-            if tag == 'transaction_id':
-                transaction_id = value
-                break
+        
+        transaction_id = data.get('message', {})
         
         if not transaction_id:
             print("Error: 'transaction_id' tag not found in Grafana alert.")
             return jsonify({"status": "error", "message": "'transaction_id' tag not found in Grafana alert"}), 400
 
         print(f"Found transaction_id: {transaction_id}. Starting analysis...")
-        summary = analyze_and_summarize_failure(transaction_id)
+        summary = analyze_and_summarize_failure_webhook(transaction_id)
         
         # In a real system, you would send this summary to Slack, PagerDuty, etc.
         # For this example, we just print it to the console.
